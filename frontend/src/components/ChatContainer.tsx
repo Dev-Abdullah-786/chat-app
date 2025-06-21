@@ -1,5 +1,6 @@
 import type React from "react";
 import assets, { messagesDummyData } from "../assets/assets";
+import { useEffect, useRef } from "react";
 
 type User = {
   _id: string;
@@ -16,6 +17,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   selectedUser,
   setSelectedUser,
 }) => {
+  const scrollEnd = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollEnd.current) {
+      scrollEnd.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
   return selectedUser !== null ? (
     <div className="h-full overflow-scroll relative backdrop-blur-lg">
       <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
@@ -38,7 +47,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         {messagesDummyData.map((msg, index) => (
           <div
             key={index}
-            className={`flex items-end justify-around ${
+            className={`flex items-end gap-2 justify-end mb-6 ${
               msg?.senderId !== "680f50e4f10f3cd28382ecf9" && "flex-row-reverse"
             }`}
           >
@@ -63,8 +72,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
               <img
                 src={
                   msg.senderId === "680f50e4f10f3cd28382ecf9"
-                    ? msg.image
-                    : assets.avatar_icon
+                    ? assets.avatar_icon
+                    : assets.profile_martin
                 }
                 alt=""
                 className="w-7 rounded-full"
@@ -73,6 +82,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
             </div>
           </div>
         ))}
+        <div ref={scrollEnd}></div>
       </div>
     </div>
   ) : (
