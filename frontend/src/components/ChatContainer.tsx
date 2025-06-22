@@ -1,6 +1,7 @@
 import type React from "react";
 import assets, { messagesDummyData } from "../assets/assets";
 import { useEffect, useRef } from "react";
+import { formatMessageTime } from "../lib/utiils";
 
 type User = {
   _id: string;
@@ -78,7 +79,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
                 alt=""
                 className="w-7 rounded-full"
               />
-              <p className="text-gray-500">{msg.createdAt}</p>
+              <p className="text-gray-500">
+                {formatMessageTime(msg.createdAt)}
+              </p>
             </div>
           </div>
         ))}
