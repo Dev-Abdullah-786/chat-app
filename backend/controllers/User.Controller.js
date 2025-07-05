@@ -1,4 +1,4 @@
-const { default: cloundinary } = require("../lib/cloudinary");
+const { default: cloudinary } = require("../lib/cloudinary");
 const { errorhandler } = require("../middlewares/error.Middleware");
 const User = require("../models/User.Schema");
 
@@ -31,4 +31,36 @@ const Signup = async (req, res, next) => {
   }
 };
 
-module.exports = { Signup };
+// Login user
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password) {
+      return next(errorhandler(400, "Please fill all required fields"));
+    }
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return next(errorhandler(401, "Invalid Email or Password"));
+    }
+
+    const comparePassword = await user.checkPassword(password);
+
+    if (!comparePassword) {
+      return next(errorhandler(401, "Invalid Email or Password"));
+    }
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    return res.status(200).json({
+      success: true,
+      message: "User login successfully",
+      token: await user.generateToken(),
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+module.exports = { Signup, login };
