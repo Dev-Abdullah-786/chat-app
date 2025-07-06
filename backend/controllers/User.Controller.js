@@ -63,4 +63,43 @@ const login = async (req, res, next) => {
   }
 };
 
-module.exports = { Signup, login };
+// Check Auth
+const checkAuth = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "User is authenticated",
+    user: req.user,
+  });
+};
+
+// Update Profile
+const updateProfile = async (req, res, next) => {
+  try {
+    const { profilePic, bio, fullName } = req.body;
+    const { _id } = req.user;
+    let updatedUser;
+    if (!profilePic) {
+      updatedUser = await User.findByIdAndUpdate(
+        _id,
+        { bio, fullName },
+        { new: true }
+      );
+    } else {
+      const upload = await cloudinary.uploader.upload(profilePic);
+      updatedUser = await User.findByIdAndUpdate(
+        _id,
+        { profileImage: upload.secure_url, bio, fullName },
+        { new: true }
+      );
+    }
+    return res.status(200).json({
+      success: true,
+      message: "User profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+module.exports = { Signup, login, checkAuth, updateProfile };
