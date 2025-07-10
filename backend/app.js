@@ -8,6 +8,7 @@ const { Server } = require("socket.io");
 const connectDb = require("./database/connectDb");
 const { errorMiddleware } = require("./middlewares/error.Middleware");
 const { userRouter } = require("./routes/User.Routes");
+const { messageRouter } = require("./routes/Message.Routes");
 
 const httpServer = createServer(app);
 
@@ -39,6 +40,7 @@ app.use(express.json({ limit: "4mb" }));
 app.use(cors());
 
 app.use("api/v1/auth", userRouter);
+app.use("api/v1/message", messageRouter);
 
 connectDb();
 
