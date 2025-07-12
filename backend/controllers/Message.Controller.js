@@ -56,4 +56,18 @@ const getMessages = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getMessages};
+// Mark message as seen using message id
+const markMessageAsSeen = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Message.updateOne({ _id: id }, { seen: true });
+    return res.status(200).json({
+      success: true,
+      message: "Message marked as seen successfully",
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+module.exports = { getAllUsers, getMessages, markMessageAsSeen };
