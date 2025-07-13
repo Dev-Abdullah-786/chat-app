@@ -1,5 +1,7 @@
 const Message = require("../models/Message.Schema");
 const User = require("../models/User.Schema");
+const { default: cloudinary } = require("../lib/cloudinary");
+const { io, userSocketMap } = require("../app");
 
 // Get all users except the looged in user
 const getAllUsers = async (req, res) => {
@@ -70,4 +72,39 @@ const markMessageAsSeen = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getMessages, markMessageAsSeen };
+// Send message to user
+const sendMessage = async (req, res) => {
+  try {
+    const { text, message } = req.body;
+    const { id: receiverId } = req.params;
+    const { _id } = req.user;
+
+    let imageUrl;
+    if (image) {
+      const response = await cloudinary.uploader.upload(image);
+      imageUrl = response.secure_url;
+    }
+    const newMessage = new Message.create({
+      senderId: _id,
+      receiverId,
+      text,
+      image: imageUrl,
+    });
+    await newMessage.save();
+
+    const receiverSocketId = userSocketMap[receiverId];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Message sent successfully",
+      message: newMessage,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+module.exports = { getAllUsers, getMessages, markMessageAsSeen, sendMessage };
