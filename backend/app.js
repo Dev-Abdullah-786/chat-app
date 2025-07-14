@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./config/.env" });
 const { createServer } = require("http");
 const cors = require("cors");
+const morgan = require("morgan")
 const { Server } = require("socket.io");
 const connectDb = require("./database/connectDb");
 const { errorMiddleware } = require("./middlewares/error.Middleware");
@@ -38,6 +39,7 @@ io.on("connection", (socket) => {
 
 app.use(express.json({ limit: "4mb" }));
 app.use(cors());
+app.use(morgan("dev"))
 
 app.use("api/v1/auth", userRouter);
 app.use("api/v1/message", messageRouter);
