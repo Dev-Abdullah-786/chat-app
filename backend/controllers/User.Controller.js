@@ -16,8 +16,8 @@ const Signup = async (req, res, next) => {
     const user = await User.create({
       fullName,
       email,
-      phone,
       password,
+      bio
     });
 
     return res.status(201).json({

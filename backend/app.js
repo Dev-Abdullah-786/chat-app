@@ -41,8 +41,8 @@ app.use(express.json({ limit: "4mb" }));
 app.use(cors());
 app.use(morgan("dev"))
 
-app.use("api/v1/auth", userRouter);
-app.use("api/v1/message", messageRouter);
+app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/message", messageRouter);
 
 connectDb();
 

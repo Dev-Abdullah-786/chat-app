@@ -75,7 +75,7 @@ const markMessageAsSeen = async (req, res) => {
 // Send message to user
 const sendMessage = async (req, res) => {
   try {
-    const { text, message } = req.body;
+    const { text, image } = req.body;
     const { id: receiverId } = req.params;
     const { _id } = req.user;
 
@@ -100,7 +100,7 @@ const sendMessage = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
-      message: newMessage,
+      newMessage: newMessage,
     });
   } catch (error) {
     console.error(error);
