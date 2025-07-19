@@ -7,7 +7,7 @@ import {
   type UpdateProfilePayload,
 } from "./auth-context";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
@@ -61,11 +61,89 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const login = async (state: AuthState, credentials: Credentials) => {
+    try {
+      const { data } = await axios.post(`/auth/${state}`, credentials);
+      if (data.success) {
+        setAuthUser(data.user);
+        connectedSocket(data.user);
+        axios.defaults.headers.common["token"] = data.token;
+        setToken(data.token);
+        localStorage.setItem("token", data.token);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error: unknown) {
+      console.error(error);
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "isAxiosError" in error
+      ) {
+        const axiosError = error as AxiosError<{ message: string }>;
+        const message = axiosError.response?.data?.message;
+        toast.error(message || "Request failed");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
+  const logout = async () => {
+    localStorage.removeItem("token");
+    axios.defaults.headers.common["token"] = null;
+    setToken(null);
+    setAuthUser(null);
+    setOnlineUsers([]);
+    toast.success("Logged out successfully");
+    socket?.disconnect();
+  };
+
+  const updateProfile = async (payload: UpdateProfilePayload) => {
+    try {
+      const { data } = await axios.put("/auth/update-profile", payload);
+      if (data.success) {
+        setAuthUser(data.user);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error: unknown) {
+      console.error(error);
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "isAxiosError" in error
+      ) {
+        const axiosError = error as AxiosError<{ message: string }>;
+        const message = axiosError.response?.data?.message;
+        toast.error(message || "Request failed");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common["token"] = token;
+    }
+    checkAuth();
+  }, [token, checkAuth]);
+
   const value: AuthContextType = {
     axios,
     authUser,
     onlineUsers,
     socket,
+    login,
+    logout,
+    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
