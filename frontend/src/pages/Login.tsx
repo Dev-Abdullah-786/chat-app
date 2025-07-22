@@ -1,5 +1,6 @@
-import { useState } from "react";
+import {useState } from "react";
 import assets from "../assets/assets";
+import { useAuth } from "../context/Auth/useAuth";
 
 const Login = () => {
   const [authState, setAuthState] = useState("Sign up");
@@ -18,12 +19,15 @@ const Login = () => {
     setAuthData({ ...authData, [name]: value });
   };
 
+  const {login} =useAuth();
+
   const onSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (authState === "Sign up" && !isDataSubmitted) {
       setIsDataSubmitted(true);
       return;
     }
+    login(authState === "Sign up" ? "signup" : "login", authData);
   };
 
   return (
