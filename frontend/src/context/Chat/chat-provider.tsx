@@ -50,6 +50,31 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const getMessages = async (id: string) => {
+    try {
+      const { data } = await axios.get(`/message/${id}`);
+      if (data.success) {
+        setMessages(data.messages);
+      }
+    } catch (error) {
+      console.error(error);
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "isAxiosError" in error
+      ) {
+        const axiosError = error as AxiosError<{ message: string }>;
+        const message = axiosError.response?.data?.message;
+        toast.error(message || "Request failed");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
   const value: ChatContextType = {
     messages,
     users,
@@ -58,6 +83,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     setUnseenMessages,
     setSelectedUser,
     getUsers,
+    getMessages
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
