@@ -3,6 +3,7 @@ import {
   type ChatContextType,
   type Message,
   type User,
+  type messagePayload,
 } from "./chat-context";
 
 import { useState, type ReactNode } from "react";
@@ -75,6 +76,36 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const sendMessages = async (messageData: messagePayload) => {
+    try {
+      const { data } = await axios.post(
+        `/message/send/${selectedUser?._id}`,
+        messageData
+      );
+      if (data.success) {
+        setMessages((prev) => [...prev, data.newMessage]);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "isAxiosError" in error
+      ) {
+        const axiosError = error as AxiosError<{ message: string }>;
+        const message = axiosError.response?.data?.message;
+        toast.error(message || "Request failed");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
   const value: ChatContextType = {
     messages,
     users,
@@ -83,7 +114,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     setUnseenMessages,
     setSelectedUser,
     getUsers,
-    getMessages
+    getMessages,
+    sendMessages,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
