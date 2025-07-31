@@ -6,7 +6,7 @@ import {
   type messagePayload,
 } from "./chat-context";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import type { AxiosError } from "axios";
@@ -23,7 +23,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     {}
   );
 
-  const { axios } = useAuth();
+  const { socket, axios } = useAuth();
 
   const getUsers = async () => {
     try {
@@ -106,6 +106,33 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const subscribeToMessage = async () => {
+    if (!socket) return;
+    socket.on("newMessage", (newMessage) => {
+      if (selectedUser && newMessage.senderId === selectedUser._id) {
+        newMessage.seen = true;
+        setMessages((prev) => [...prev, newMessage]);
+        axios.put(`/messages/mark/${newMessage._id}`);
+      } else {
+        setUnseenMessages((prevUnseenMessages) => ({
+          ...prevUnseenMessages,
+          [newMessage.seen]: prevUnseenMessages[newMessage.senderId]
+            ? prevUnseenMessages[newMessage.senderId] + 1
+            : 1,
+        }));
+      }
+    });
+  };
+
+  const unSubscribeFromMessage = () => {
+    if (socket) socket.off("newMessage");
+  };
+
+  useEffect(() => {
+    subscribeToMessage();
+    return () => unSubscribeFromMessage();
+  }, [socket, selectedUser]);
+
   const value: ChatContextType = {
     messages,
     users,
@@ -116,6 +143,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     getUsers,
     getMessages,
     sendMessages,
+    subscribeToMessage,
+    unSubscribeFromMessage,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
