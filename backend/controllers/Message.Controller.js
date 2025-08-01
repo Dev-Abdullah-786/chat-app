@@ -84,7 +84,7 @@ const sendMessage = async (req, res) => {
       const response = await cloudinary.uploader.upload(image);
       imageUrl = response.secure_url;
     }
-    const newMessage = new Message.create({
+    const newMessage = new Message({
       senderId: _id,
       receiverId,
       text,
