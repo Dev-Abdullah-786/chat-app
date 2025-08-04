@@ -1,17 +1,10 @@
-import { useState } from "react";
 import ChatContainer from "../components/ChatContainer";
 import RightSidebar from "../components/RightSidebar";
 import Sidebar from "../components/Sidebar";
-
-type User = {
-  _id: string;
-  fullName: string;
-  profilePic?: string;
-  bio?: string;
-};
+import { useChat } from "../context/Chat/useChat";
 
 const Home = () => {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const {selectedUser} = useChat()
   return (
     <div className="border w-full h-screen sm:px-[15%] sm:py-[5%]">
       <div
@@ -21,15 +14,9 @@ const Home = () => {
             : "md:grid-cols-2"
         }`}
       >
-        <Sidebar
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-        />
-        <ChatContainer
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-        />
-        {selectedUser && <RightSidebar selectedUser={selectedUser} />}
+        <Sidebar />
+        <ChatContainer/>
+        {selectedUser && <RightSidebar />}
       </div>
     </div>
   );
