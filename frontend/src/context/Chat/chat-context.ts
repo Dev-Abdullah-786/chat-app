@@ -21,6 +21,7 @@ export type Message = {
   text?: string;
   image?: string;
   seen?: boolean;
+  createdAt?: string;
 };
 
 export interface ChatContextType {
