@@ -112,11 +112,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       if (selectedUser && newMessage.senderId === selectedUser._id) {
         newMessage.seen = true;
         setMessages((prev) => [...prev, newMessage]);
-        axios.put(`/messages/mark/${newMessage._id}`);
+        axios.put(`/message/mark/${newMessage._id}`);
       } else {
         setUnseenMessages((prevUnseenMessages) => ({
           ...prevUnseenMessages,
-          [newMessage.seen]: prevUnseenMessages[newMessage.senderId]
+          [newMessage.senderId]: prevUnseenMessages[newMessage.senderId]
             ? prevUnseenMessages[newMessage.senderId] + 1
             : 1,
         }));

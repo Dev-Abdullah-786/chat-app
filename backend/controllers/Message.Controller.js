@@ -1,7 +1,7 @@
 const Message = require("../models/Message.Schema");
 const User = require("../models/User.Schema");
 const { default: cloudinary } = require("../lib/cloudinary");
-const { io, userSocketMap } = require("../app");
+const { userSocketMap, getIo } = require("../config/socketStore");
 
 // Get all users except the looged in user
 const getAllUsers = async (req, res) => {
@@ -84,6 +84,7 @@ const sendMessage = async (req, res) => {
       const response = await cloudinary.uploader.upload(image);
       imageUrl = response.secure_url;
     }
+
     const newMessage = new Message({
       senderId: _id,
       receiverId,
@@ -94,13 +95,13 @@ const sendMessage = async (req, res) => {
 
     const receiverSocketId = userSocketMap[receiverId];
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+      getIo().to(receiverSocketId).emit("newMessage", newMessage);
     }
 
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
-      newMessage: newMessage,
+      newMessage,
     });
   } catch (error) {
     console.error(error);

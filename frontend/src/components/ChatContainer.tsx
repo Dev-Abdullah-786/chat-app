@@ -29,7 +29,7 @@ const ChatContainer = () => {
     if (selectedUser) {
       getMessages(selectedUser?._id);
     }
-  }, [selectedUser, getMessages]);
+  }, [selectedUser]);
 
   const handleSendMessage = async (
     e?:

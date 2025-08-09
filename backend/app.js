@@ -1,37 +1,36 @@
 const express = require("express");
-const app = express();
 const dotenv = require("dotenv");
-dotenv.config({ path: "./config/.env" });
 const { createServer } = require("http");
 const cors = require("cors");
-const morgan = require("morgan")
+const morgan = require("morgan");
 const { Server } = require("socket.io");
 const connectDb = require("./database/connectDb");
 const { errorMiddleware } = require("./middlewares/error.Middleware");
 const { userRouter } = require("./routes/User.Routes");
 const { messageRouter } = require("./routes/Message.Routes");
+const { setIo, userSocketMap } = require("./config/socketStore");
 
+dotenv.config({ path: "./config/.env" });
+
+const app = express();
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-  },
+  cors: { origin: "*" },
 });
-module.exports.io = io;
-
-module.exports.userSocketMap = {};
+setIo(io);
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
-  console.log("User connected with id: ", userId);
+  console.log("User connected with id:", userId);
   if (userId) {
     userSocketMap[userId] = socket.id;
   }
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
   socket.on("disconnect", () => {
-    console.log("User disconnected with id: ", userId);
+    console.log("User disconnected with id:", userId);
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
@@ -39,13 +38,12 @@ io.on("connection", (socket) => {
 
 app.use(express.json({ limit: "4mb" }));
 app.use(cors());
-app.use(morgan("dev"))
+app.use(morgan("dev"));
 
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/message", messageRouter);
 
 connectDb();
-
 app.use(errorMiddleware);
 
 module.exports = httpServer;

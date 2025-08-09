@@ -14,6 +14,7 @@ import { io, type Socket } from "socket.io-client";
 import type { AxiosError } from "axios";
 
 const backendUrl = import.meta.env.VITE_BACKEND_BASE_URL;
+const socketUrl = import.meta.env.VITE_SOCKET_URL;
 axios.defaults.baseURL = backendUrl;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -24,7 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const connectedSocket = (userData: User) => {
     if (!userData || socket?.connected) return;
-    const newSocket = io(backendUrl, {
+    const newSocket = io(socketUrl, {
       query: { userId: userData._id },
     });
     newSocket.connect();
